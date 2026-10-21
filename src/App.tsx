@@ -1,11 +1,11 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, Suspense } from 'react'
 import type { ReactNode } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, Environment, useTexture } from '@react-three/drei'
 import { EquirectangularReflectionMapping, SRGBColorSpace } from 'three'
 import type { Mesh } from 'three'
 
-const colores = ['tomato', 'royalblue', 'gold', 'limegreen']
+const colores = ['#ff4d4d', '#3b82f6', '#facc15', '#22c55e', '#a855f7', '#06b6d4']
 
 type FiguraProps = {
   position: [number, number, number]
@@ -20,7 +20,8 @@ function Figura({ position, alClic, children }: FiguraProps) {
 
   useFrame((_, delta) => {
     if (figura.current) {
-      figura.current.rotation.y += delta
+      figura.current.rotation.y += delta * 0.9
+      figura.current.rotation.x += delta * 0.4
     }
   })
 
@@ -28,7 +29,7 @@ function Figura({ position, alClic, children }: FiguraProps) {
     <mesh
       ref={figura}
       position={position}
-      scale={encima ? 1.4 : 1}
+      scale={encima ? 1.35 : 1}
       onPointerOver={() => setEncima(true)}
       onPointerOut={() => setEncima(false)}
       onClick={() => {
@@ -37,13 +38,17 @@ function Figura({ position, alClic, children }: FiguraProps) {
       }}
     >
       {children}
-      <meshStandardMaterial color={colores[color]} />
+      <meshStandardMaterial
+        color={colores[color]}
+        roughness={0.25}
+        metalness={0.3}
+      />
     </mesh>
   )
 }
 
-function Fondo360() {
-  const textura = useTexture('/360.jpg', (t) => {
+function Fondo360({ url }: { url: string }) {
+  const textura = useTexture(url, (t) => {
     t.mapping = EquirectangularReflectionMapping
     t.colorSpace = SRGBColorSpace
   })
@@ -52,50 +57,117 @@ function Fondo360() {
 
 function App() {
   const [clics, setClics] = useState(0)
+  const [entorno, setEntorno] = useState<'/gamer_room.jpg' | '/selva.jpg'>('/gamer_room.jpg')
   const sumar = () => setClics((n) => n + 1)
 
   return (
     <>
       <Canvas camera={{ fov: 75, position: [0, 0, 0.1] }}>
-        <ambientLight intensity={0.6} />
-        <directionalLight position={[2, 3, 2]} intensity={1.5} />
-        <Fondo360 />
+        <ambientLight intensity={0.7} />
+        <directionalLight position={[3, 4, 2]} intensity={1.5} />
+        <directionalLight position={[-3, -2, -2]} intensity={0.5} />
 
-        <Figura position={[0, 0, -3]} alClic={sumar}>
-          <boxGeometry args={[1, 1, 1]} />
+        <Suspense fallback={null}>
+          <Fondo360 url={entorno} />
+        </Suspense>
+
+        {/* 1. Nudo Toroidal (Frente) */}
+        <Figura position={[0, 0, -3.5]} alClic={sumar}>
+          <torusKnotGeometry args={[0.55, 0.18, 128, 32]} />
         </Figura>
 
-        <Figura position={[-5.5, -0.5, -4]} alClic={sumar}>
-          <sphereGeometry args={[0.8, 32, 32]} />
+        {/* 2. Icosaedro - Cristal poligonal (Izquierda) */}
+        <Figura position={[-4, 0.2, -1]} alClic={sumar}>
+          <icosahedronGeometry args={[0.85, 0]} />
         </Figura>
 
-        <Figura position={[0, -2, 0]} alClic={sumar}>
-          <coneGeometry args={[0.8, 1.6, 32]} />
+        {/* 3. Dodecaedro - 12 caras pentagonales (Derecha) */}
+        <Figura position={[3.8, 0.2, -1]} alClic={sumar}>
+          <dodecahedronGeometry args={[0.8, 0]} />
         </Figura>
 
-        <Figura position={[0, 0, 5]} alClic={sumar}>
-          <torusGeometry args={[0.7, 0.3, 16, 48]} />
+        {/* 4. Cápsula espacial (Atrás) */}
+        <Figura position={[0, 0.4, 4]} alClic={sumar}>
+          <capsuleGeometry args={[0.45, 0.9, 16, 32]} />
         </Figura>
 
         <OrbitControls enableZoom={false} enablePan={false} rotateSpeed={-0.4} />
       </Canvas>
 
+      {/* Panel Superior: Contador de clics y Selector de Entorno */}
       <div
         style={{
           position: 'fixed',
           top: 16,
           left: 16,
           zIndex: 10,
-          padding: '8px 16px',
-          borderRadius: 8,
-          background: 'rgba(0, 0, 0, 0.6)',
-          color: '#fff',
-          fontSize: 32,
-          fontWeight: 'bold',
-          pointerEvents: 'none',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 12,
         }}
       >
-        Clics: {clics}
+        <div
+          style={{
+            padding: '10px 20px',
+            borderRadius: 12,
+            background: 'rgba(15, 23, 42, 0.75)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            color: '#fff',
+            fontSize: 28,
+            fontWeight: 700,
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+            userSelect: 'none',
+          }}
+        >
+          Clics: <span style={{ color: '#38bdf8' }}>{clics}</span>
+        </div>
+
+        <div
+          style={{
+            display: 'flex',
+            gap: 8,
+            background: 'rgba(15, 23, 42, 0.75)',
+            backdropFilter: 'blur(10px)',
+            padding: '6px',
+            borderRadius: 12,
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+          }}
+        >
+          <button
+            onClick={() => setEntorno('/gamer_room.jpg')}
+            style={{
+              padding: '8px 14px',
+              borderRadius: 8,
+              border: 'none',
+              cursor: 'pointer',
+              fontWeight: 600,
+              fontSize: 14,
+              transition: 'all 0.2s ease',
+              background: entorno === '/gamer_room.jpg' ? '#8b5cf6' : 'transparent',
+              color: '#fff',
+            }}
+          >
+            🎮 Cuarto Gamer
+          </button>
+          <button
+            onClick={() => setEntorno('/selva.jpg')}
+            style={{
+              padding: '8px 14px',
+              borderRadius: 8,
+              border: 'none',
+              cursor: 'pointer',
+              fontWeight: 600,
+              fontSize: 14,
+              transition: 'all 0.2s ease',
+              background: entorno === '/selva.jpg' ? '#10b981' : 'transparent',
+              color: '#fff',
+            }}
+          >
+            🌿 Selva
+          </button>
+        </div>
       </div>
     </>
   )
