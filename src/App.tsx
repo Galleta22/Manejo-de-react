@@ -72,8 +72,8 @@ function App() {
         </Suspense>
 
         {/* 1. Nudo Toroidal (Frente) */}
-        <Figura position={[0, 0, -3.5]} alClic={sumar}>
-          <torusKnotGeometry args={[0.55, 0.18, 128, 32]} />
+        <Figura position={[3, 0, -3.5]} alClic={sumar}>
+          < torusKnotGeometry args={[0.55, 0.18, 128, 32]} />
         </Figura>
 
         {/* 2. Icosaedro - Cristal poligonal (Izquierda) */}
@@ -82,7 +82,7 @@ function App() {
         </Figura>
 
         {/* 3. Dodecaedro - 12 caras pentagonales (Derecha) */}
-        <Figura position={[3.8, 0.2, -1]} alClic={sumar}>
+        <Figura position={[3.8, 2, -1]} alClic={sumar}>
           <dodecahedronGeometry args={[0.8, 0]} />
         </Figura>
 
@@ -92,10 +92,10 @@ function App() {
         </Figura>
 
         <OrbitControls enableZoom={false} enablePan={false} rotateSpeed={-0.4} />
-      </Canvas>
+      </Canvas >
 
       {/* Panel Superior: Contador de clics y Selector de Entorno */}
-      <div
+      < div
         style={{
           position: 'fixed',
           top: 16,
@@ -104,7 +104,8 @@ function App() {
           display: 'flex',
           flexDirection: 'column',
           gap: 12,
-        }}
+        }
+        }
       >
         <div
           style={{
@@ -168,7 +169,7 @@ function App() {
             🌿 Selva
           </button>
         </div>
-      </div>
+      </div >
     </>
   )
 }
